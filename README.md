@@ -9,10 +9,6 @@
 </picture>
 <br>
 An Open-Source AI PR Reviewer
-<br><br>
-<a href="https://github.com/your-org/DiffMind/commits/main">
-<img alt="GitHub" src="https://img.shields.io/github/last-commit/your-org/DiffMind/main?style=for-the-badge" height="20">
-</a>
 </div>
 
 ---
@@ -141,6 +137,26 @@ ___
 <p float="center">
 <kbd>
 <img src="https://your-org.dev/images/diffmind/improve_new_short_main.png" width="512">
+</kbd>
+</p>
+</div>
+<hr>
+
+<h4><a href="https://github.com/your-org/DiffMind/pull/1#issuecomment-3">/ask</a></h4>
+<div align="center">
+<p float="center">
+<kbd>
+<img src="https://your-org.dev/images/diffmind/ask_new_short_main.png" width="512">
+</kbd>
+</p>
+</div>
+<hr>
+
+<h4><a href="https://github.com/your-org/DiffMind/issues/1#issuecomment-4">/similar_issue</a></h4>
+<div align="center">
+<p float="center">
+<kbd>
+<img src="https://your-org.dev/images/diffmind/similar_issue_new_short_main.png" width="512">
 </kbd>
 </p>
 </div>
