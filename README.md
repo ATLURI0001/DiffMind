@@ -1,55 +1,34 @@
-
-
 <br />
 
 <div align="center">
 
-
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://codium.ai/images/pr_agent/logo-dark.png" width="330">
-  <source media="(prefers-color-scheme: light)" srcset="https://codium.ai/images/pr_agent/logo-light.png" width="330">
-  <img src="https://codium.ai/images/pr_agent/logo-light.png" alt="logo" width="330">
-
+  <source media="(prefers-color-scheme: dark)" srcset="https://your-org.dev/images/diffmind/logo-dark.png" width="330">
+  <source media="(prefers-color-scheme: light)" srcset="https://your-org.dev/images/diffmind/logo-light.png" width="330">
+  <img src="https://your-org.dev/images/diffmind/logo-light.png" alt="logo" width="330">
 </picture>
 <br>
-The Original Open-Source PR Reviewer
+An Open-Source AI PR Reviewer
 <br><br>
-<a href="https://github.com/the-pr-agent/pr-agent/commits/main">
-<img alt="GitHub" src="https://img.shields.io/github/last-commit/the-pr-agent/pr-agent/main?style=for-the-badge" height="20">
+<a href="https://github.com/your-org/DiffMind/commits/main">
+<img alt="GitHub" src="https://img.shields.io/github/last-commit/your-org/DiffMind/main?style=for-the-badge" height="20">
 </a>
 </div>
 
 ---
 
- This repository contains the open-source PR Agent Project.
- It is not the Qodo offering for open-source projects.
+This repository contains the open-source DiffMind project.
 
-PR-Agent is an open-source, AI-powered code review agent and a community-maintained legacy project of Qodo. It is distinct from Qodo's primary AI code review offering, which provides a feature-rich, context-aware experience. Qodo offers a free version for open-source projects and integrates seamlessly with GitHub, GitLab, Bitbucket, and Azure DevOps for high-quality automated reviews.
-
+DiffMind is an open-source, AI-powered code review agent that helps teams ship better pull requests faster. It plugs into your existing Git workflow and gives you automated, context-aware reviews without locking you into any single vendor.
 
 ## Sponsors
 
-PR-Agent is a community-maintained open-source project, with its ongoing development supported by our sponsors. If you'd like to support the project, consider [becoming a sponsor](https://github.com/sponsors/naorpeled).
-
-<p align="center">
-  <h3 align="center">🥇 Gold Sponsor</h3>
-</p>
-
-<p align="center">
-  <a target="_blank" href="https://www.qodo.ai/">
-    <img alt="Qodo — Gold sponsor" src="https://www.qodo.ai/wp-content/uploads/2025/03/qodo-logo.svg" width="300">
-  </a>
-</p>
-
-<p align="center">
-  <a target="_blank" href="https://www.qodo.ai/solutions/open-source/">Free version of Qodo for open-source projects</a>
-</p>
-
+DiffMind is a community-maintained open-source project. If you'd like to support the project, consider [becoming a sponsor](https://github.com/sponsors/your-org).
 
 ## Table of Contents
 
 - [Getting Started](#getting-started)
-- [Why Use PR-Agent?](#why-use-pr-agent)
+- [Why Use DiffMind?](#why-use-diffmind)
 - [Features](#features)
 - [See It in Action](#see-it-in-action)
 - [How It Works](#how-it-works)
@@ -59,68 +38,67 @@ PR-Agent is a community-maintained open-source project, with its ongoing develop
 ## Getting Started
 
 > [!NOTE]
-> **Docker Hub namespace migration.** Releases `0.34.2` and later are published under [`pragent/pr-agent`](https://hub.docker.com/r/pragent/pr-agent). Older releases (up to and including `v0.31`) remain available at the legacy [`codiumai/pr-agent`](https://hub.docker.com/r/codiumai/pr-agent) namespace as a frozen archive — no new images are pushed there. Update any pinned `image:` / `docker pull` / `uses: docker://` references when upgrading to `0.34.2+`.
+> **Docker Hub namespace.** Images are published under [`your-org/diffmind`](https://hub.docker.com/r/your-org/diffmind). Update any pinned `image:` / `docker pull` / `uses: docker://` references when upgrading.
 
-### 🚀 Quick Start for PR-Agent
+### 🚀 Quick Start for DiffMind
 
 #### 1. GitHub Action (Recommended)
 
 Add automated PR reviews to your repository with a simple workflow file:
 
 ```yaml
-# .github/workflows/pr-agent.yml
-name: PR Agent
+# .github/workflows/diffmind.yml
+name: DiffMind
 on:
   pull_request:
     types: [opened, synchronize]
 jobs:
-  pr_agent_job:
+  diffmind_job:
     runs-on: ubuntu-latest
     steps:
-    - name: PR Agent action step
-      uses: the-pr-agent/pr-agent@main
+    - name: DiffMind action step
+      uses: your-org/DiffMind@main
       env:
         OPENAI_KEY: ${{ secrets.OPENAI_KEY }}
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 ```
-[Full GitHub Action setup guide](https://docs.pr-agent.ai/installation/github/#run-as-a-github-action)
+[Full GitHub Action setup guide](https://docs.diffmind.dev/installation/github/#run-as-a-github-action)
 
 #### 2. CLI Usage (Local Development)
 
-Run PR-Agent locally on your repository:
+Run DiffMind locally on your repository:
 
 ```bash
-pip install pr-agent
+pip install diffmind
 export OPENAI_KEY=your_key_here
-pr-agent --pr_url https://github.com/owner/repo/pull/123 review
+diffmind --pr_url https://github.com/owner/repo/pull/123 review
 ```
-[Complete CLI setup guide](https://docs.pr-agent.ai/usage-guide/automations_and_usage/#local-repo-cli)
+[Complete CLI setup guide](https://docs.diffmind.dev/usage-guide/automations_and_usage/#local-repo-cli)
 
 #### 3. Other Platforms
 
-- [GitLab webhook setup](https://docs.pr-agent.ai/installation/gitlab/)
-- [BitBucket app installation](https://docs.pr-agent.ai/installation/bitbucket/)
-- [Azure DevOps setup](https://docs.pr-agent.ai/installation/azure/)
+- [GitLab webhook setup](https://docs.diffmind.dev/installation/gitlab/)
+- [BitBucket app installation](https://docs.diffmind.dev/installation/bitbucket/)
+- [Azure DevOps setup](https://docs.diffmind.dev/installation/azure/)
 
 ## News and Updates
 
-Full notes for every release are on the [Releases page](https://github.com/the-pr-agent/pr-agent/releases).
+Full notes for every release are on the [Releases page](https://github.com/your-org/DiffMind/releases).
 
-
-## Why Use PR-Agent?
+## Why Use DiffMind?
 
 ### 🎯 Built for Real Development Teams
 
 **Fast & Affordable**: Each tool (`/review`, `/improve`, `/ask`) uses a single LLM call (~30 seconds, low cost)
 
-**Handles Any PR Size**: Our [PR Compression strategy](https://docs.pr-agent.ai/core-abilities/#pr-compression-strategy) effectively processes both small and large PRs
+**Handles Any PR Size**: Our PR compression strategy effectively processes both small and large PRs
 
-**Highly Customizable**: JSON-based prompting allows easy customization of review categories and behavior via [configuration files](pr_agent/settings/configuration.toml)
+**Highly Customizable**: JSON-based prompting allows easy customization of review categories and behavior via configuration files (`diffmind/settings/configuration.toml`)
 
 **Platform Agnostic**:
 - **Git Providers**: GitHub, GitLab, BitBucket, Azure DevOps, Gitea
 - **Deployment**: CLI, GitHub Actions, Docker, self-hosted, webhooks
-- **AI Models**: OpenAI GPT, Anthropic Claude, Google Gemini, DeepSeek, Mistral, and any other model reachable through LiteLLM (Azure OpenAI, AWS Bedrock, Vertex AI, Databricks, OpenRouter, Ollama, and more) — see [Changing a model](https://docs.pr-agent.ai/usage-guide/changing_a_model/)
+- **AI Models**: OpenAI GPT, Anthropic Claude, Google Gemini, DeepSeek, Mistral, and any other model reachable through LiteLLM (Azure OpenAI, AWS Bedrock, Vertex AI, Databricks, OpenRouter, Ollama, and more) — see [Changing a model](https://docs.diffmind.dev/usage-guide/changing_a_model/)
 
 **Open Source Benefits**:
 - Full control over your data and infrastructure
@@ -132,39 +110,37 @@ Full notes for every release are on the [Releases page](https://github.com/the-p
 
 <div style="text-align:left;">
 
-See the current [feature and git provider support matrix](https://docs.pr-agent.ai/#features) in the PR-Agent documentation.
+See the current feature and git-provider support matrix in the DiffMind documentation.
 
-⚠️ `/help_docs` is temporarily disabled since `v0.36.1` pending a fix for a credential-exposure issue ([#2445](https://github.com/the-pr-agent/pr-agent/issues/2445)).
-
-[//]: # (- Support for additional git providers is described in [here]&#40;./docs/Full_environments.md&#41;)
 ___
 
 ## See It in Action
 
 </div>
-<h4><a href="https://github.com/the-pr-agent/pr-agent/pull/530">/describe</a></h4>
+
+<h4><a href="https://github.com/your-org/DiffMind/pull/1">/describe</a></h4>
 <div align="center">
 <p float="center">
-<img src="https://www.codium.ai/images/pr_agent/describe_new_short_main.png" width="512">
+<img src="https://your-org.dev/images/diffmind/describe_new_short_main.png" width="512">
 </p>
 </div>
 <hr>
 
-<h4><a href="https://github.com/the-pr-agent/pr-agent/pull/732#issuecomment-1975099151">/review</a></h4>
+<h4><a href="https://github.com/your-org/DiffMind/pull/1#issuecomment-1">/review</a></h4>
 <div align="center">
 <p float="center">
 <kbd>
-<img src="https://www.codium.ai/images/pr_agent/review_new_short_main.png" width="512">
+<img src="https://your-org.dev/images/diffmind/review_new_short_main.png" width="512">
 </kbd>
 </p>
 </div>
 <hr>
 
-<h4><a href="https://github.com/the-pr-agent/pr-agent/pull/732#issuecomment-1975099159">/improve</a></h4>
+<h4><a href="https://github.com/your-org/DiffMind/pull/1#issuecomment-2">/improve</a></h4>
 <div align="center">
 <p float="center">
 <kbd>
-<img src="https://www.codium.ai/images/pr_agent/improve_new_short_main.png" width="512">
+<img src="https://your-org.dev/images/diffmind/improve_new_short_main.png" width="512">
 </kbd>
 </p>
 </div>
@@ -173,7 +149,7 @@ ___
 
 ### Usage Examples
 
-PR-Agent tools run as a comment on a PR or from the CLI. A few common ones:
+DiffMind tools run as a comment on a PR or from the CLI. A few common ones:
 
 ```bash
 # Comment on a PR (GitHub/GitLab/Bitbucket/…):
@@ -186,48 +162,33 @@ PR-Agent tools run as a comment on a PR or from the CLI. A few common ones:
 /similar_issue # find similar issues in the repository
 
 # Or locally via the CLI:
-pr-agent --pr_url <PR_URL> review
-pr-agent --issue_url <ISSUE_URL> similar_issue
+diffmind --pr_url <PR_URL> review
+diffmind --issue_url <ISSUE_URL> similar_issue
 ```
 
-See the [Tools docs](https://docs.pr-agent.ai/tools/#usage-examples) for the full list of tools with example commands, and each tool's page for screenshots and options.
+See the Tools docs for the full list of tools with example commands, and each tool's page for screenshots and options.
 
 <hr>
 
 ## How It Works
 
-The following diagram illustrates PR-Agent tools and their flow:
+The following diagram illustrates DiffMind tools and their flow:
 
-![PR-Agent Tools](https://www.qodo.ai/images/pr_agent/diagram-v0.9.png)
+![DiffMind Tools](https://your-org.dev/images/diffmind/diagram-v0.1.png)
 
 ## Data Privacy
 
-### Self-hosted PR-Agent
+### Self-hosted DiffMind
 
-- If you host PR-Agent with your OpenAI API key, it is between you and OpenAI. You can read their API data privacy policy here:
+- If you host DiffMind with your own OpenAI API key, data handling is between you and OpenAI. You can read their API data privacy policy here:
 https://openai.com/enterprise-privacy
 
 ## Contributing
 
-To contribute to the project, get started by reading our [Contributing Guide](https://github.com/the-pr-agent/pr-agent/blob/main/CONTRIBUTING.md).
+To contribute to the project, get started by reading our [Contributing Guide](https://github.com/your-org/DiffMind/blob/main/CONTRIBUTING.md).
 
 For local verification, run `PYTHONPATH=. uv run pytest` from the repository root; it discovers the unit-test suite under `tests/unittest` by default. End-to-end tests under `tests/e2e_tests` require provider credentials and should be invoked explicitly, for example `PYTHONPATH=. uv run pytest tests/e2e_tests/test_github_app.py`.
 
-
-## Big News for PR-Agent
-
-PR-Agent has a new home!
-
-After years of building this tool alongside the community, Qodo has donated PR-Agent to the open-source community - and we couldn't be more excited about what comes next.
-
-The project now lives in the PR-Agent org on GitHub, is fully community-owned, and is open for contributions and additional maintainers.
-
-What else changed:
-- Docs moved to - [docs.pr-agent.ai](https://docs.pr-agent.ai/)
-- Qodo Merge (Qodo 1.0), the hosted URL, which was the enterprise version of PR-Agent, has been rebranded and evolved into Qodo (Qodo 2.0), a full AI code review platform.
-
 ## ❤️ Community
 
-This open-source release remains here as a community contribution from Qodo — the origin of modern AI-powered code collaboration. We’re proud to share it and inspire developers worldwide.
-
-The project now has its first external maintainer, Naor ([@naorpeled](https://github.com/naorpeled)), and is currently in the process of being donated to an open-source foundation.
+DiffMind is community-owned and open for contributions and additional maintainers. If you'd like to get involved, open an issue or a PR!
