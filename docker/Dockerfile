@@ -1,4 +1,4 @@
-FROM python:3.14.7-slim AS base
+FROM python:3.15.0-slim AS base
 COPY --from=ghcr.io/astral-sh/uv:0.12.10 /uv /uvx /bin/
 
 # litellm fetches its model cost map over the network at import time, so a
