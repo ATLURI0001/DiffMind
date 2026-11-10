@@ -27,3 +27,8 @@ def test_to_hunk_only_patch_preserves_splitlines_boundaries():
         patch = f"metadata{separator}{hunk}"
 
         assert to_hunk_only_patch(patch) == hunk
+
+
+def test_to_hunk_only_patch_handles_empty_and_none():
+    assert to_hunk_only_patch("") == ""
+    assert to_hunk_only_patch(None) == ""

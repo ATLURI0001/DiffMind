@@ -203,3 +203,81 @@ def test_reconstruct_base_file_emptied():
     # Every line removed but the file kept: `+0,0` must not be read as out of bounds.
     # (Only the lines are checked; the trailing newline follows the EOF handling.)
     assert reconstruct_base_file("", _EMPTIED_FILE_PATCH).splitlines() == ["a", "b"]
+
+
+def test_parse_unified_diff_empty_and_none():
+    assert parse_unified_diff("") == []
+    assert parse_unified_diff("   \n\t  ") == []
+    assert parse_unified_diff(None) == []
+
+
+def test_parse_unified_diff_skips_git_binary_and_binary_differ():
+    mixed_diff = """diff --git a/bin.dat b/bin.dat
+index 1111111..2222222 100644
+GIT binary patch
+delta 4
+KcmZQzU|<5P002M$
+
+literal 4
+LcmZQzU|<5P002M$
+
+diff --git a/logo.png b/logo.png
+new file mode 100644
+index 0000000..3333333
+Binary files /dev/null and b/logo.png differ
+
+diff --git a/app.py b/app.py
+index 4444444..5555555 100644
+--- a/app.py
++++ b/app.py
+@@ -1 +1 @@
+-x = 1
++x = 2
+"""
+    files = parse_unified_diff(mixed_diff)
+    assert len(files) == 1
+    assert files[0].filename == "app.py"
+    assert files[0].edit_type == EDIT_TYPE.MODIFIED
+
+
+def test_reconstruct_base_file_empty_and_none_patch():
+    assert reconstruct_base_file("hello\n", "") == ""
+    assert reconstruct_base_file("hello\n", None) == ""
+    assert reconstruct_base_file("hello\n", "   \n") == ""
+
+
+def test_reconstruct_base_file_eof_newline_added_in_head():
+    patch = """--- a/a.txt
++++ b/a.txt
+@@ -1,2 +1,2 @@
+ line1
+-line2
+\\ No newline at end of file
++line2
+"""
+    # Base had NO trailing newline; head added one.
+    assert reconstruct_base_file("line1\nline2\n", patch) == "line1\nline2"
+
+
+def test_reconstruct_base_file_eof_newline_removed_in_head():
+    patch = """--- a/a.txt
++++ b/a.txt
+@@ -1,2 +1,2 @@
+ line1
+-line2
++line2
+\\ No newline at end of file
+"""
+    # Base HAD a trailing newline; head removed it.
+    assert reconstruct_base_file("line1\nline2", patch) == "line1\nline2\n"
+
+
+def test_reconstruct_base_file_deleted_without_trailing_newline():
+    patch = """--- a/old.txt
++++ /dev/null
+@@ -1,2 +0,0 @@
+-hello
+-world
+\\ No newline at end of file
+"""
+    assert reconstruct_base_file("", patch) == "hello\nworld"

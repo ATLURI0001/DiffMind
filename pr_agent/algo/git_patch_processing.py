@@ -15,13 +15,16 @@ NO_NEWLINE_AT_EOF_MARKER = r'\ No newline at end of file'
 _SPLITLINES_BREAK_CHARS = "\n\r\v\f\x1c\x1d\x1e\x85\u2028\u2029"
 
 
-def to_hunk_only_patch(patch_str: str) -> str:
+def to_hunk_only_patch(patch_str: str | None) -> str:
     """Drop unified-diff file metadata before the first hunk.
 
     ``FilePatchInfo.patch`` consumers expect hunk-only patches and may otherwise
     treat ``---``/``+++`` file headers as changed source lines. Returns an empty
-    string when the diff has no textual hunk, for example a rename-only change.
+    string when the diff is empty or has no textual hunk, for example a
+    rename-only change.
     """
+    if not patch_str:
+        return ""
     hunk_start = patch_str.find("@@")
     while hunk_start != -1:
         if hunk_start == 0 or patch_str[hunk_start - 1] in _SPLITLINES_BREAK_CHARS:

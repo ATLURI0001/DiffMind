@@ -49,7 +49,7 @@ def parse_unified_diff(diff_text: str) -> List[FilePatchInfo]:
 
     lines = diff_text.splitlines(keepends=True)
     # Find the start index of each "diff --git" section.
-    starts = [i for i, ln in enumerate(lines) if _DIFF_GIT_RE.match(ln.rstrip("\n"))]
+    starts = [i for i, ln in enumerate(lines) if _DIFF_GIT_RE.match(ln.rstrip("\r\n"))]
     if not starts:
         return []
     starts.append(len(lines))
@@ -64,9 +64,13 @@ def parse_unified_diff(diff_text: str) -> List[FilePatchInfo]:
 
         edit_type = EDIT_TYPE.MODIFIED
         old_filename = None
+        is_binary = False
         for ln in section[1:]:
             s = ln.rstrip("\r\n")
             if s.startswith("@@"):
+                break
+            if s == "GIT binary patch" or (s.startswith("Binary files ") and s.endswith(" differ")):
+                is_binary = True
                 break
             if s.startswith("--- "):
                 a_path = _normalize_file_header_path(s[4:])
@@ -81,6 +85,8 @@ def parse_unified_diff(diff_text: str) -> List[FilePatchInfo]:
                 old_filename = s[len("rename from "):].strip()
             elif s.startswith("rename to "):
                 edit_type = EDIT_TYPE.RENAMED
+        if is_binary:
+            continue
         if (
             edit_type not in (EDIT_TYPE.ADDED, EDIT_TYPE.DELETED)
             and a_path != b_path
