@@ -108,6 +108,29 @@ class TestParseUnifiedDiff:
         assert "-old" in files[0].patch
         assert "+new" in files[0].patch
 
+    def test_skips_git_binary_patch_and_binary_files_differ(self):
+        diff = (
+            "diff --git a/bin.dat b/bin.dat\n"
+            "new file mode 100644\n"
+            "index 0000000..2222222\n"
+            "GIT binary patch\n"
+            "literal 4\n"
+            "LcmZQzU|<5P002M$\n"
+            "\n"
+            "diff --git a/img.png b/img.png\n"
+            "index 1111111..3333333 100644\n"
+            "Binary files a/img.png and b/img.png differ\n"
+            "diff --git a/code.py b/code.py\n"
+            "index 4444444..5555555 100644\n"
+            "--- a/code.py\n"
+            "+++ b/code.py\n"
+            "@@ -1 +1 @@\n"
+            "-a = 1\n"
+            "+a = 2\n"
+        )
+        files = parse_unified_diff(diff)
+        assert [f.filename for f in files] == ["code.py"]
+
 
 class TestProviderRegistration:
     def test_registry_has_mosaico_diff_and_originals_intact(self):

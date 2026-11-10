@@ -19,12 +19,14 @@ def _strip_prefix(path: str | None) -> str | None:
     return path
 
 
-def parse_unified_diff(diff_text: str) -> list[FilePatchInfo]:
+def parse_unified_diff(diff_text: str | None) -> list[FilePatchInfo]:
     """Parse a unified diff into FilePatchInfo objects (patch + metadata only).
 
     base_file / head_file are left empty here; the provider fills them from the
     working tree and by reverse-applying the patch. Binary files are skipped.
     """
+    if not diff_text or not isinstance(diff_text, str) or not diff_text.strip():
+        return []
     patch_set = PatchSet(diff_text)
     files: list[FilePatchInfo] = []
     for pf in patch_set:
@@ -59,9 +61,11 @@ def parse_unified_diff(diff_text: str) -> list[FilePatchInfo]:
     return files
 
 
-def reconstruct_base_file(head_file_str: str, patch_str: str) -> str:
+def reconstruct_base_file(head_file_str: str, patch_str: str | None) -> str:
     """Reverse-apply a single-file unified diff to head (new) content to recover
     base (original) content. Returns "" if the patch does not cleanly apply."""
+    if not patch_str or not isinstance(patch_str, str) or not patch_str.strip():
+        return ""
     try:
         patch_set = PatchSet(patch_str)
     except UnidiffParseError as e:
@@ -73,8 +77,17 @@ def reconstruct_base_file(head_file_str: str, patch_str: str) -> str:
     head_lines = head_file_str.splitlines()
     base_lines: list[str] = []
     head_idx = 0  # 0-based cursor into head_lines
+    base_eof_no_newline = False
+    head_eof_no_newline = False
+    base_had_eof_line_in_last_hunk = False
 
     for hunk in patch_set[0]:
+        # Track EOF newline state only for the final hunk if it covers EOF.
+        base_eof_no_newline = False
+        head_eof_no_newline = False
+        base_had_eof_line_in_last_hunk = False
+        last_op: str | None = None
+
         # 1-based -> 0-based. A hunk with no head lines (a pure deletion, as in
         # `git diff -U0`, or a file emptied of all lines) numbers the line *before*
         # the change instead, so its start already is the 0-based insertion point.
@@ -85,24 +98,46 @@ def reconstruct_base_file(head_file_str: str, patch_str: str) -> str:
         head_idx = hunk_head_start
 
         for line in hunk:
+            if line.line_type == "\\":
+                if last_op in ("-", " "):
+                    base_eof_no_newline = True
+                elif last_op == "+":
+                    head_eof_no_newline = True
+                continue
             value = line.value.rstrip("\r\n")
             if line.is_context:
                 if head_idx >= len(head_lines) or head_lines[head_idx] != value:
                     return ""
                 base_lines.append(head_lines[head_idx])
                 head_idx += 1
+                last_op = " "
+                base_had_eof_line_in_last_hunk = True
             elif line.is_added:  # present only in head: verify + skip
                 if head_idx >= len(head_lines) or head_lines[head_idx] != value:
                     return ""
                 head_idx += 1
+                last_op = "+"
             elif line.is_removed:  # present only in base: emit, don't consume head
                 base_lines.append(value)
+                last_op = "-"
+                base_had_eof_line_in_last_hunk = True
 
+    trailing_head_untouched = head_idx < len(head_lines)
     base_lines.extend(head_lines[head_idx:])
-    result = "\n".join(base_lines)
     # Preserve a trailing newline only when the base actually has content; an
     # empty base (e.g. reversing an add-file patch) must stay "" so downstream
     # extend_patch() correctly treats it as having no original file.
-    if base_lines and head_file_str.endswith("\n"):
+    if not base_lines:
+        return ""
+    result = "\n".join(base_lines)
+    if trailing_head_untouched:
+        has_trailing_nl = head_file_str.endswith("\n")
+    elif base_eof_no_newline:
+        has_trailing_nl = False
+    elif head_eof_no_newline and base_had_eof_line_in_last_hunk:
+        has_trailing_nl = True
+    else:
+        has_trailing_nl = head_file_str.endswith("\n")
+    if has_trailing_nl:
         result += "\n"
     return result
