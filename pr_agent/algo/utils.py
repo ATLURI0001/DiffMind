@@ -81,6 +81,15 @@ class ReasoningEffort(str, Enum):
     NONE = "none"
 
 
+def wrap_markdown_code_block(code: str, language: str = "") -> str:
+    """Wrap code in a Markdown fence whose length exceeds any internal backtick run."""
+    body = "" if code is None else str(code)
+    runs = re.findall(r"`+", body)
+    fence = "`" * max(3, max((len(r) for r in runs), default=0) + 1)
+    lang = (language or "").strip()
+    return f"{fence}{lang}\n{body}\n{fence}"
+
+
 def _expand_minute_suffix(text: str) -> str:
     """Replace minute abbreviations like '30m' with '30 minutes'.
 
@@ -399,7 +408,9 @@ def extract_relevant_lines_str(end_line, files, relevant_file, start_line, deden
                     if dedent and relevant_lines_str:
                         # Remove the longest leading string of spaces and tabs common to all lines.
                         relevant_lines_str = textwrap.dedent(relevant_lines_str)
-                    relevant_lines_str = f"```{file.language}\n{relevant_lines_str}\n```"
+                    relevant_lines_str = wrap_markdown_code_block(
+                        relevant_lines_str, file.language or ""
+                    )
                     break
 
         return relevant_lines_str
@@ -622,7 +633,7 @@ def parse_code_suggestion(code_suggestion: dict, i: int = 0, gfm_supported: bool
             if isinstance(sub_value, dict):  # "code example"
                 markdown_text += f"  - **{sub_key}:**\n"
                 for code_key, code_value in sub_value.items():  # 'before' and 'after' code
-                    code_str = f"```\n{code_value}\n```"
+                    code_str = wrap_markdown_code_block(code_value)
                     code_str_indented = textwrap.indent(code_str, '        ')
                     markdown_text += f"    - **{code_key}:**\n{code_str_indented}\n"
             else:
