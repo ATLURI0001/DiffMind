@@ -27,7 +27,9 @@ def parse_unified_diff(diff_text: str | None) -> list[FilePatchInfo]:
     """
     if not diff_text or not isinstance(diff_text, str) or not diff_text.strip():
         return []
-    patch_set = PatchSet(diff_text)
+    # Normalize CRLF/CR line endings so trailing '\r' does not corrupt filenames or fake renames
+    normalized_diff = diff_text.replace("\r\n", "\n").replace("\r", "\n")
+    patch_set = PatchSet(normalized_diff)
     files: list[FilePatchInfo] = []
     for pf in patch_set:
         if pf.is_binary_file:
@@ -61,13 +63,13 @@ def parse_unified_diff(diff_text: str | None) -> list[FilePatchInfo]:
     return files
 
 
-def reconstruct_base_file(head_file_str: str, patch_str: str | None) -> str:
+def reconstruct_base_file(head_file_str: str | None, patch_str: str | None) -> str:
     """Reverse-apply a single-file unified diff to head (new) content to recover
     base (original) content. Returns "" if the patch does not cleanly apply."""
-    if not patch_str or not isinstance(patch_str, str) or not patch_str.strip():
+    if not isinstance(head_file_str, str) or not patch_str or not isinstance(patch_str, str) or not patch_str.strip():
         return ""
     try:
-        patch_set = PatchSet(patch_str)
+        patch_set = PatchSet(patch_str.replace("\r\n", "\n").replace("\r", "\n"))
     except UnidiffParseError as e:
         get_logger().info(f"Could not parse patch for base reconstruction: {e}")
         return ""

@@ -281,3 +281,38 @@ def test_reconstruct_base_file_deleted_without_trailing_newline():
 \\ No newline at end of file
 """
     assert reconstruct_base_file("", patch) == "hello\nworld"
+
+
+def test_parse_unified_diff_crlf_mode_only_and_rename():
+    crlf_mode_diff = (
+        "diff --git a/scripts/run.sh b/scripts/run.sh\r\n"
+        "old mode 100644\r\n"
+        "new mode 100755\r\n"
+    )
+    files = parse_unified_diff(crlf_mode_diff)
+    assert len(files) == 1
+    assert files[0].filename == "scripts/run.sh"
+    assert files[0].edit_type == EDIT_TYPE.MODIFIED
+    assert files[0].old_filename is None
+
+    crlf_rename_diff = (
+        "diff --git a/old_name.py b/new_name.py\r\n"
+        "similarity index 100%\r\n"
+        "rename from old_name.py\r\n"
+        "rename to new_name.py\r\n"
+    )
+    renamed = parse_unified_diff(crlf_rename_diff)
+    assert len(renamed) == 1
+    assert renamed[0].filename == "new_name.py"
+    assert renamed[0].old_filename == "old_name.py"
+    assert renamed[0].edit_type == EDIT_TYPE.RENAMED
+
+
+def test_parse_unified_diff_malformed_raises_and_none_head():
+    import pytest
+    from unidiff.errors import UnidiffParseError
+
+    malformed = "--- a/x.py\n+++ b/x.py\n@@ -1,1 +1,1 @@\nmissing_prefix_char\n"
+    with pytest.raises(UnidiffParseError):
+        parse_unified_diff(malformed)
+    assert reconstruct_base_file(None, "--- a/x\n+++ b/x\n") == ""
