@@ -5,7 +5,7 @@ from unittest.mock import Mock, patch
 import pytest
 
 from pr_agent.algo.comment_identity import PRReviewHeader
-from pr_agent.algo.utils import _expand_minute_suffix, convert_to_markdown_v2
+from pr_agent.algo.utils import _expand_minute_suffix, convert_to_markdown_v2, wrap_markdown_code_block
 from pr_agent.tools.pr_description import insert_br_after_x_chars
 
 """
@@ -468,3 +468,20 @@ class TestExpandMinuteSuffix:
     def test_minute_suffix_in_compound_estimate(self):
         """'2h 30m' becomes '2h 30 minutes' (only the minute part is replaced)."""
         assert _expand_minute_suffix("2h 30m") == "2h 30 minutes"
+
+
+class TestWrapMarkdownCodeBlock:
+    def test_standard_code_uses_triple_backticks(self):
+        res = wrap_markdown_code_block("x = 1", "python")
+        assert res == "```python\nx = 1\n```"
+
+    def test_nested_triple_backticks_upgrade_to_quad_fence(self):
+        snippet = "doc = '''\n```python\nprint(1)\n```\n'''"
+        res = wrap_markdown_code_block(snippet, "python")
+        assert res.startswith("````python\n")
+        assert res.endswith("\n````")
+        assert "```python" in res
+
+    def test_none_language_and_none_code_handled_safely(self):
+        res = wrap_markdown_code_block(None, None)
+        assert res == "```\n\n```"
