@@ -89,6 +89,12 @@ FORBIDDEN_ARGS = [
     "--config.description_issue_regex=(?:[A-Za-z ]+)+X(d+)",
     "--config__description_issue_regex=(?:[A-Za-z ]+)+X(d+)",
     '--config={"description_issue_regex": "(?:[A-Za-z ]+)+X(d+)"}',
+    # leading/repeated dots or __. transitions must not bypass section/key lookup
+    '--.config.repo_context_files=["AGENTS.md"]',
+    "--config..description_issue_regex=(a+)+",
+    "--config.__extra_config_url=https://evil.example",
+    "--.pr_reviewer.publish_error_details=true",
+    "--skills.__paths=/etc",
 ]
 
 
