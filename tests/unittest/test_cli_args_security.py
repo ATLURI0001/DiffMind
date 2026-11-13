@@ -245,3 +245,32 @@ def test_validate_user_args_rejects_forbidden_arg_with_leading_whitespace(prefix
     ok, offending = CliArgs.validate_user_args([f"{prefix}--github.webhook_secret=secret"])
     assert ok is False
     assert "webhook_secret" in offending
+
+
+def test_host_only_setting_arg_case_insensitive_and_whitespace():
+    assert CliArgs._host_only_setting_arg("  --SKILLS.paths=/etc") == ".skills.paths"
+    assert CliArgs._host_only_setting_arg("--PROMPT_FRAGMENTS.diff_hunk_format=unsafe") == ".prompt_fragments.diff_hunk_format"
+    assert CliArgs._host_only_setting_arg(None) is None
+    assert CliArgs._host_only_setting_arg(123) is None
+
+
+@pytest.mark.parametrize(
+    "quoted_or_dash",
+    [
+        '"--github.webhook_secret=secret"',
+        "'--openai.key=secret'",
+        "-github.webhook_secret=secret",
+        "-openai.key=secret",
+        "---openai.key=secret",
+    ],
+)
+def test_validate_user_args_rejects_quoted_and_single_dash_forbidden(quoted_or_dash):
+    ok, offending = CliArgs.validate_user_args([quoted_or_dash])
+    assert ok is False
+    assert offending != ""
+
+
+def test_validate_user_args_handles_non_string_elements():
+    ok, offending = CliArgs.validate_user_args([None, 42, "--pr_reviewer.num_code_suggestions=3"])
+    assert ok is True
+    assert offending == ""

@@ -11,7 +11,9 @@ class CliArgs:
     @staticmethod
     def _host_only_setting_arg(arg: str) -> str | None:
         """Return a protected setting token when a CLI arg targets a host-only key."""
-        setting_name = arg.lstrip('-').split('=', 1)[0].strip().replace('__', '.')
+        if not isinstance(arg, str):
+            return None
+        setting_name = arg.strip().lstrip('-').lower().split('=', 1)[0].strip().replace('__', '.')
         while '..' in setting_name:
             setting_name = setting_name.replace('..', '.')
         setting_name = setting_name.strip('.')
@@ -80,8 +82,12 @@ class CliArgs:
                     forbidden_cli_args[i] = '.' + forbidden_cli_args[i]
 
             for arg in args:
+                if not isinstance(arg, str):
+                    continue
                 arg = arg.strip()
-                if arg.startswith('--'):
+                if (arg.startswith('"') and arg.endswith('"')) or (arg.startswith("'") and arg.endswith("'")):
+                    arg = arg[1:-1].strip()
+                if arg.startswith('-'):
                     arg_word = arg.lower()
                     # replace double underscore with dot, e.g. --openai__key -> --openai.key
                     arg_word = arg_word.replace('__', '.')
