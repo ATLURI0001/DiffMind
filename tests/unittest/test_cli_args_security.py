@@ -259,6 +259,8 @@ def test_host_only_setting_arg_case_insensitive_and_whitespace():
     [
         '"--github.webhook_secret=secret"',
         "'--openai.key=secret'",
+        "`--openai.key=secret`",
+        "'-openai.key=secret'",
         "-github.webhook_secret=secret",
         "-openai.key=secret",
         "---openai.key=secret",
@@ -266,6 +268,21 @@ def test_host_only_setting_arg_case_insensitive_and_whitespace():
 )
 def test_validate_user_args_rejects_quoted_and_single_dash_forbidden(quoted_or_dash):
     ok, offending = CliArgs.validate_user_args([quoted_or_dash])
+    assert ok is False
+    assert offending != ""
+
+
+@pytest.mark.parametrize(
+    "colon_separated",
+    [
+        "--config.description_issue_regex: (a+)+",
+        "--skills.paths: /etc",
+        "--push_outputs: evil",
+        "--openai.key: secret",
+    ],
+)
+def test_validate_user_args_rejects_colon_separated_host_only(colon_separated):
+    ok, offending = CliArgs.validate_user_args([colon_separated])
     assert ok is False
     assert offending != ""
 
