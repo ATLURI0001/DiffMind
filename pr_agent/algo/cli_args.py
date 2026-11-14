@@ -1,3 +1,4 @@
+import re
 from base64 import b64decode
 
 from pr_agent.config_security import (
@@ -13,7 +14,13 @@ class CliArgs:
         """Return a protected setting token when a CLI arg targets a host-only key."""
         if not isinstance(arg, str):
             return None
-        setting_name = arg.strip().lstrip('-').lower().split('=', 1)[0].strip().replace('__', '.')
+        raw = arg.strip().lstrip('-').lower()
+        sep_idx = len(raw)
+        for sep in ('=', ':'):
+            pos = raw.find(sep)
+            if pos != -1 and pos < sep_idx:
+                sep_idx = pos
+        setting_name = raw[:sep_idx].strip().replace('__', '.')
         while '..' in setting_name:
             setting_name = setting_name.replace('..', '.')
         setting_name = setting_name.strip('.')
@@ -85,17 +92,22 @@ class CliArgs:
                 if not isinstance(arg, str):
                     continue
                 arg = arg.strip()
-                if (arg.startswith('"') and arg.endswith('"')) or (arg.startswith("'") and arg.endswith("'")):
+                while (
+                    (arg.startswith('"') and arg.endswith('"'))
+                    or (arg.startswith("'") and arg.endswith("'"))
+                    or (arg.startswith('`') and arg.endswith('`'))
+                ):
                     arg = arg[1:-1].strip()
                 if arg.startswith('-'):
                     arg_word = arg.lower()
                     # replace double underscore with dot, e.g. --openai__key -> --openai.key
                     arg_word = arg_word.replace('__', '.')
+                    arg_norm_sep = re.sub(r'^\s*(-+[^=:\s]+)\s*[:=]', r'\1=', arg_word)
                     host_only_arg = CliArgs._host_only_setting_arg(arg_word)
                     if host_only_arg:
                         return False, host_only_arg
                     for forbidden_arg_word in forbidden_cli_args:
-                        if forbidden_arg_word in arg_word:
+                        if forbidden_arg_word in arg_word or forbidden_arg_word in arg_norm_sep:
                             return False, forbidden_arg_word
             return True, ""
         except Exception as e:
