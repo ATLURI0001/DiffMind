@@ -14,7 +14,7 @@ class CliArgs:
         """Return a protected setting token when a CLI arg targets a host-only key."""
         if not isinstance(arg, str):
             return None
-        raw = arg.strip().lstrip('-').lower()
+        raw = re.sub(r'[\u200b-\u200d\ufeff\u00ad]', '', arg).strip().lstrip('-').lower()
         sep_idx = len(raw)
         for sep in ('=', ':'):
             pos = raw.find(sep)
@@ -91,13 +91,13 @@ class CliArgs:
             for arg in args:
                 if not isinstance(arg, str):
                     continue
-                arg = arg.strip()
+                arg = re.sub(r'[\u200b-\u200d\ufeff\u00ad]', '', arg).strip()
                 while (
                     (arg.startswith('"') and arg.endswith('"'))
                     or (arg.startswith("'") and arg.endswith("'"))
                     or (arg.startswith('`') and arg.endswith('`'))
                 ):
-                    arg = arg[1:-1].strip()
+                    arg = re.sub(r'[\u200b-\u200d\ufeff\u00ad]', '', arg[1:-1]).strip()
                 if arg.startswith('-'):
                     arg_word = arg.lower()
                     # replace double underscore with dot, e.g. --openai__key -> --openai.key
