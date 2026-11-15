@@ -291,3 +291,18 @@ def test_validate_user_args_handles_non_string_elements():
     ok, offending = CliArgs.validate_user_args([None, 42, "--pr_reviewer.num_code_suggestions=3"])
     assert ok is True
     assert offending == ""
+
+
+@pytest.mark.parametrize(
+    "zero_width_arg",
+    [
+        "--open\u200bai.key=secret",
+        "--push_out\u200bputs.webhook_url=https://evil.example",
+        "--github.base_\u200curl=https://evil.example",
+        "--skills.paths\ufeff=/etc",
+    ],
+)
+def test_validate_user_args_rejects_zero_width_obfuscated_args(zero_width_arg):
+    ok, offending = CliArgs.validate_user_args([zero_width_arg])
+    assert ok is False
+    assert offending != ""
