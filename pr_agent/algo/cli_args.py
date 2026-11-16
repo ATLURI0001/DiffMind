@@ -20,13 +20,15 @@ class CliArgs:
             pos = raw.find(sep)
             if pos != -1 and pos < sep_idx:
                 sep_idx = pos
-        setting_name = raw[:sep_idx].strip().replace('__', '.')
+        setting_name = re.sub(r'["\'`]', '', raw[:sep_idx]).strip().replace('__', '.')
         while '..' in setting_name:
             setting_name = setting_name.replace('..', '.')
         setting_name = setting_name.strip('.')
         if not setting_name:
             return None
         section, separator, key = setting_name.partition('.')
+        section = section.strip()
+        key = key.strip()
         if not separator:
             if (section in REPO_OVERRIDABLE_KEYS_BY_HOST_SECTION
                     or section in REPO_HOST_ONLY_KEYS_BY_SECTION
@@ -103,11 +105,18 @@ class CliArgs:
                     # replace double underscore with dot, e.g. --openai__key -> --openai.key
                     arg_word = arg_word.replace('__', '.')
                     arg_norm_sep = re.sub(r'^\s*(-+[^=:\s]+)\s*[:=]', r'\1=', arg_word)
+                    arg_clean = re.sub(r'["\'`]', '', arg_word)
+                    arg_norm_clean = re.sub(r'["\'`]', '', arg_norm_sep)
                     host_only_arg = CliArgs._host_only_setting_arg(arg_word)
                     if host_only_arg:
                         return False, host_only_arg
                     for forbidden_arg_word in forbidden_cli_args:
-                        if forbidden_arg_word in arg_word or forbidden_arg_word in arg_norm_sep:
+                        if (
+                            forbidden_arg_word in arg_word
+                            or forbidden_arg_word in arg_norm_sep
+                            or forbidden_arg_word in arg_clean
+                            or forbidden_arg_word in arg_norm_clean
+                        ):
                             return False, forbidden_arg_word
             return True, ""
         except Exception as e:
