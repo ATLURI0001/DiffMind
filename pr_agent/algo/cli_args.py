@@ -1,4 +1,5 @@
 import re
+import unicodedata
 from base64 import b64decode
 
 from pr_agent.config_security import (
@@ -10,11 +11,24 @@ from pr_agent.config_security import (
 
 class CliArgs:
     @staticmethod
+    def _sanitize_arg_text(arg: str) -> str:
+        """Strip invisible formatting, bidi controls, variation selectors, and ASCII controls."""
+        if not isinstance(arg, str):
+            return ""
+        norm = unicodedata.normalize("NFKC", arg)
+        return "".join(
+            c for c in norm
+            if unicodedata.category(c) != "Cf"
+            and not ("\ufe00" <= c <= "\ufe0f")
+            and (ord(c) >= 32 or c in "\t\n\r")
+        )
+
+    @staticmethod
     def _host_only_setting_arg(arg: str) -> str | None:
         """Return a protected setting token when a CLI arg targets a host-only key."""
         if not isinstance(arg, str):
             return None
-        raw = re.sub(r'[\u200b-\u200d\ufeff\u00ad]', '', arg).strip().lstrip('-').lower()
+        raw = CliArgs._sanitize_arg_text(arg).strip().lstrip('-').lower()
         sep_idx = len(raw)
         for sep in ('=', ':'):
             pos = raw.find(sep)
@@ -93,13 +107,13 @@ class CliArgs:
             for arg in args:
                 if not isinstance(arg, str):
                     continue
-                arg = re.sub(r'[\u200b-\u200d\ufeff\u00ad]', '', arg).strip()
+                arg = CliArgs._sanitize_arg_text(arg).strip()
                 while (
                     (arg.startswith('"') and arg.endswith('"'))
                     or (arg.startswith("'") and arg.endswith("'"))
                     or (arg.startswith('`') and arg.endswith('`'))
                 ):
-                    arg = re.sub(r'[\u200b-\u200d\ufeff\u00ad]', '', arg[1:-1]).strip()
+                    arg = CliArgs._sanitize_arg_text(arg[1:-1]).strip()
                 if arg.startswith('-'):
                     arg_word = arg.lower()
                     # replace double underscore with dot, e.g. --openai__key -> --openai.key

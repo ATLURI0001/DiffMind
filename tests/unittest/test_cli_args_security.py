@@ -326,3 +326,36 @@ def test_validate_user_args_rejects_segment_quoted_args(segment_quoted_arg):
     assert ok is False
     assert offending != ""
 
+
+@pytest.mark.parametrize(
+    "bidi_or_invisible_arg",
+    [
+        "--github.webhook_\u200esecret=123",
+        "--github.webhook_\u200fsecret=123",
+        "--github.base_\u2060url=https://evil.example",
+        "--github.base_\u202aurl=https://evil.example",
+        "--github.base_\u202eurl=https://evil.example",
+        "--github.bearer_\ufe0ftoken=secret",
+        "--open\x00ai.key=secret",
+    ],
+)
+def test_validate_user_args_rejects_bidi_and_invisible_format_chars(bidi_or_invisible_arg):
+    ok, offending = CliArgs.validate_user_args([bidi_or_invisible_arg])
+    assert ok is False
+    assert offending != ""
+
+
+@pytest.mark.parametrize(
+    "fullwidth_arg",
+    [
+        "－－github．bearer_token＝secret",
+        "--skills．paths＝/etc",
+        "--push_outputs．webhook_url＝https://evil.example",
+    ],
+)
+def test_validate_user_args_rejects_fullwidth_unicode_variants(fullwidth_arg):
+    ok, offending = CliArgs.validate_user_args([fullwidth_arg])
+    assert ok is False
+    assert offending != ""
+
+
