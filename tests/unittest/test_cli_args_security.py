@@ -306,3 +306,23 @@ def test_validate_user_args_rejects_zero_width_obfuscated_args(zero_width_arg):
     ok, offending = CliArgs.validate_user_args([zero_width_arg])
     assert ok is False
     assert offending != ""
+
+
+@pytest.mark.parametrize(
+    "segment_quoted_arg",
+    [
+        '--"config".repo_context_files=secret',
+        "--'config'.repo_context_files=secret",
+        '--config."repo_context_files"=secret',
+        "--config.'repo_context_files'=secret",
+        '--"push_outputs"=http://evil.com',
+        "--'push_outputs'=http://evil.com",
+        '--`push_outputs`=http://evil.com',
+        '--`config`.`repo_context_files`=secret',
+    ],
+)
+def test_validate_user_args_rejects_segment_quoted_args(segment_quoted_arg):
+    ok, offending = CliArgs.validate_user_args([segment_quoted_arg])
+    assert ok is False
+    assert offending != ""
+
