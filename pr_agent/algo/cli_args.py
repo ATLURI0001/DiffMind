@@ -135,3 +135,71 @@ class CliArgs:
             return True, ""
         except Exception as e:
             return False, str(e)
+
+    @staticmethod
+    def normalize_cli_flag(arg: str) -> tuple[str | None, str | None]:
+        """Normalize a CLI argument into (key, value) setting pair.
+
+        Returns (None, None) if arg is not a recognized key=value flag.
+        """
+        if not isinstance(arg, str):
+            return None, None
+        clean = CliArgs._sanitize_arg_text(arg).strip()
+        if not clean.startswith('-'):
+            return None, None
+        raw = clean.lstrip('-').replace('__', '.')
+        if '=' in raw:
+            key, _, val = raw.partition('=')
+        elif ':' in raw:
+            key, _, val = raw.partition(':')
+        else:
+            return raw.strip(), ""
+        clean_key = re.sub(r'["\'`]', '', key).strip()
+        clean_val = val.strip().strip('"\'`')
+        return clean_key, clean_val
+
+    @staticmethod
+    def audit_cli_args(args: list) -> dict:
+        """Produce structured diagnostic and security audit metrics for CLI arguments.
+
+        Returns:
+            Dictionary with keys 'valid', 'offending_arg', 'total_count', 'flag_count',
+            'overrides', and 'diagnostics'.
+        """
+        if not isinstance(args, list):
+            return {
+                "valid": True,
+                "offending_arg": "",
+                "total_count": 0,
+                "flag_count": 0,
+                "overrides": {},
+                "diagnostics": ["Empty or non-list arguments"],
+            }
+
+        valid, offending = CliArgs.validate_user_args(args)
+        overrides = {}
+        flags = 0
+        diagnostics = []
+
+        for item in args:
+            if not isinstance(item, str):
+                continue
+            k, v = CliArgs.normalize_cli_flag(item)
+            if k:
+                flags += 1
+                overrides[k] = v or ""
+
+        if not valid:
+            diagnostics.append(f"Rejected offending argument: {offending}")
+        else:
+            diagnostics.append(f"Validated {len(args)} argument(s) with {flags} override flag(s)")
+
+        return {
+            "valid": valid,
+            "offending_arg": offending,
+            "total_count": len(args),
+            "flag_count": flags,
+            "overrides": overrides,
+            "diagnostics": diagnostics,
+        }
+

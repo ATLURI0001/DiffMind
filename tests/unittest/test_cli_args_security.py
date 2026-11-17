@@ -359,3 +359,42 @@ def test_validate_user_args_rejects_fullwidth_unicode_variants(fullwidth_arg):
     assert offending != ""
 
 
+def test_normalize_cli_flag_and_audit():
+    # Flag normalization
+    k, v = CliArgs.normalize_cli_flag("--pr_reviewer.num_code_suggestions=5")
+    assert k == "pr_reviewer.num_code_suggestions"
+    assert v == "5"
+
+    k, v = CliArgs.normalize_cli_flag("--openai__temperature:0.7")
+    assert k == "openai.temperature"
+    assert v == "0.7"
+
+    k, v = CliArgs.normalize_cli_flag("--pr_reviewer.enable_auto_approval")
+    assert k == "pr_reviewer.enable_auto_approval"
+    assert v == ""
+
+    assert CliArgs.normalize_cli_flag("not-a-flag") == (None, None)
+    assert CliArgs.normalize_cli_flag(None) == (None, None)
+
+    # Audit valid args
+    valid_args = ["--pr_reviewer.num_code_suggestions=3", "--pr_reviewer.inline=true"]
+    audit_valid = CliArgs.audit_cli_args(valid_args)
+    assert audit_valid["valid"] is True
+    assert audit_valid["total_count"] == 2
+    assert audit_valid["flag_count"] == 2
+    assert audit_valid["overrides"]["pr_reviewer.num_code_suggestions"] == "3"
+    assert audit_valid["overrides"]["pr_reviewer.inline"] == "true"
+
+    # Audit invalid args
+    invalid_args = ["--github.webhook_secret=evil"]
+    audit_invalid = CliArgs.audit_cli_args(invalid_args)
+    assert audit_invalid["valid"] is False
+    assert "webhook_secret" in audit_invalid["offending_arg"]
+
+    # Empty audit
+    audit_empty = CliArgs.audit_cli_args([])
+    assert audit_empty["valid"] is True
+    assert audit_empty["total_count"] == 0
+
+
+
